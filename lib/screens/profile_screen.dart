@@ -298,16 +298,48 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Profilim'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _loadProfile,
+      body: CustomScrollView(
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 40.0,
+            floating: true,
+            pinned: true,
+            elevation: 0,
+            centerTitle: true,
+            backgroundColor: colorScheme.primary,
+            flexibleSpace: FlexibleSpaceBar(
+              centerTitle: true,
+              title: const Text(
+                'Profilim',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
+              ),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      colorScheme.primary,
+                      const Color(0xFF004B7D),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh, color: Colors.white),
+                onPressed: _loadProfile,
+              ),
+            ],
           ),
-        ],
-      ),
-      body: FutureBuilder<User?>(
+          SliverFillRemaining(
+            hasScrollBody: true,
+            child: FutureBuilder<User?>(
         future: _userFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -476,8 +508,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
           );
         },
       ),
-    );
-  }
+    ),
+  ],
+ ),
+);
+}
 
   Widget _buildInfoCard(
     BuildContext context, {

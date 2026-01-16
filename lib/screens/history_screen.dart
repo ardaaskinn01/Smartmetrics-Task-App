@@ -94,73 +94,115 @@ class _HistoryScreenState extends State<HistoryScreen> {
     final colorScheme = theme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.surfaceContainerLowest, 
-      appBar: AppBar(
-        title: const Text(
-          'İşlem Geçmişi', 
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        elevation: 0,
-        backgroundColor: colorScheme.surfaceContainerLowest,
-        foregroundColor: colorScheme.primary,
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: Icon(Icons.refresh, color: colorScheme.secondary),
-            onPressed: () => _loadHistory(refresh: true),
-          ),
-        ],
-      ),
-      body: _history.isEmpty && !_isLoading
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                   Container(
-                     padding: const EdgeInsets.all(24),
-                     decoration: BoxDecoration(
-                       color: Colors.white,
-                       shape: BoxShape.circle,
-                       boxShadow: [
-                         BoxShadow(
-                           color: Colors.black.withOpacity(0.05),
-                           blurRadius: 20,
-                           offset: const Offset(0, 10),
-                         )
-                       ]
-                     ),
-                     child: Icon(Icons.history_edu, size: 64, color: colorScheme.secondary.withOpacity(0.5)),
-                   ),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Henüz işlem bulunmuyor',
-                    style: theme.textTheme.titleMedium?.copyWith(
-                      color: Colors.grey[600],
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  TextButton.icon(
-                    onPressed: () => _loadHistory(refresh: true),
-                    icon: const Icon(Icons.refresh),
-                    label: const Text('Yenile'),
-                  ),
-                ],
+      backgroundColor: colorScheme.surfaceContainerLowest,
+      body: CustomScrollView(
+        controller: _scrollController,
+        slivers: [
+          SliverAppBar(
+            expandedHeight: 40.0,
+            floating: true,
+            pinned: true,
+            elevation: 0,
+            centerTitle: true,
+            backgroundColor: colorScheme.primary,
+            flexibleSpace: FlexibleSpaceBar(
+              centerTitle: true,
+              title: const Text(
+                'İşlem Geçmişi',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18,
+                ),
               ),
-            )
-          : ListView.builder(
-              controller: _scrollController,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-              itemCount: _history.length + (_hasMore ? 1 : 0),
-              itemBuilder: (context, index) {
-                if (index == _history.length) {
-                  return const Center(
-                    child: Padding(
-                      padding: EdgeInsets.all(24.0),
-                      child: CircularProgressIndicator(),
+              background: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      colorScheme.primary,
+                      const Color(0xFF004B7D),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh, color: Colors.white),
+                onPressed: () => _loadHistory(refresh: true),
+              ),
+            ],
+          ),
+          SliverToBoxAdapter(
+            child: _history.isEmpty && !_isLoading
+                ? Container(
+                    padding: const EdgeInsets.only(top: 100),
+                    child: Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 20,
+                                  offset: const Offset(0, 10),
+                                )
+                              ],
+                            ),
+                            child: Icon(
+                              Icons.history_rounded,
+                              size: 64,
+                              color: colorScheme.primary.withOpacity(0.2),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          const Text(
+                            'Henüz işlem bulunmuyor',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF002B49),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          TextButton.icon(
+                            onPressed: () => _loadHistory(refresh: true),
+                            icon: const Icon(Icons.refresh),
+                            label: const Text('Yenile'),
+                          ),
+                        ],
+                      ),
                     ),
-                  );
-                }
+                  )
+                : const SizedBox.shrink(),
+          ),
+          if (_history.isNotEmpty || _isLoading) 
+            SliverPadding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate(
+                  (context, index) {
+                    // 1. Loading Durumu: Listenin sonundaysak ve yükleniyorsa loader göster
+                    if (_isLoading && index == _history.length) {
+                       return const Padding(
+                          padding: EdgeInsets.all(24.0),
+                          child: Center(child: CircularProgressIndicator()),
+                        );
+                    }
+
+                    // 2. Güvenlik Kontrolü: Eğer index hala sınır dışındaysa null dön (listeyi bitir)
+                    if (index >= _history.length) {
+                      return null;
+                    }
+
+                    // 3. Veri Erişimi: Artık güvenli alandayız
 
                 final item = _history[index];
                 final isPositive = item.amount >= 0;
@@ -308,8 +350,13 @@ class _HistoryScreenState extends State<HistoryScreen> {
                     ),
                   ],
                 );
-              },
+                  },
+                  childCount: _history.length + (_isLoading ? 1 : 0),
+                ),
+              ),
             ),
+        ],
+      ),
     );
   }
 }

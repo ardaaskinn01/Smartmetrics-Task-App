@@ -25,7 +25,7 @@ Uygulamayı geliştirirken şu mimari tercihleri önceliklendirdim:
 <p>
   <img src="assets/screenshots/login.png" width="30%" />
   <img src="assets/screenshots/home.png" width="30%" />
-  <img src="assets/screenshots/profil.png" width="30%" />
+  <img src="assets/screenshots/profile.png" width="30%" />
 </p>
 
 **Not:** Uygulamanın tasarımı Dryfix kurumsal renkleri dikkate alınarak geliştirilmiştir.
